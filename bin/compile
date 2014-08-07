@@ -12,16 +12,21 @@ function indent() {
 
 unset GIT_DIR
 
-for BUILDPACK in $(cat $1/.buildpacks); do
+cat $1/.buildpacks | while read BUILDPACK basepath || [ -n "$BUILDPACK" ]; do
   dir=$(mktemp -t buildpackXXXXX)
   rm -rf $dir
 
   url=${BUILDPACK%#*}
+  # echo "url: $url"
   branch=${BUILDPACK#*#}
+  # echo "basepath: $basepath"
+
 
   if [ "$branch" == "$url" ]; then
     branch=""
   fi
+
+  # echo "branch: $branch"
 
   if [ "$url" != "" ]; then
     echo "=====> Downloading Buildpack: $url"
@@ -41,23 +46,29 @@ for BUILDPACK in $(cat $1/.buildpacks); do
     # we'll get errors later if these are needed and don't exist
     chmod -f +x $dir/bin/{detect,compile,release} || true
 
-    framework=$($dir/bin/detect $1)
+    if [ "$basepath" != ""]; then
+      path=basepath
+    else
+      path=$1
+    fi
+
+    framework=$($dir/bin/detect $path)
 
     if [ $? == 0 ]; then
       echo "=====> Detected Framework: $framework"
-      $dir/bin/compile $1 $2 $3
+      $dir/bin/compile $path $2 $3
 
       if [ $? != 0 ]; then
         exit 1
       fi
 
       if [ -x $dir/bin/release ]; then
-        $dir/bin/release $1 > $1/last_pack_release.out
+        $dir/bin/release $path > $path/last_pack_release.out
       fi
     fi
   fi
 done
 
-if [ -e $1/last_pack_release.out ]; then
+if [ -e $path/last_pack_release.out ]; then
   echo "Using release configuration from last framework ($framework)."
 fi
