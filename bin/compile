@@ -47,7 +47,7 @@ cat $1/.buildpacks | while read BUILDPACK basepath || [ -n "$BUILDPACK" ]; do
     chmod -f +x $dir/bin/{detect,compile,release} || true
 
     if [ "$basepath" != "" ]; then
-      path=basepath
+      path=$basepath
     else
       path=$1
     fi
