@@ -52,7 +52,7 @@ cat $1/.buildpacks | while read BUILDPACK basepath || [ -n "$BUILDPACK" ]; do
       path=$1
     fi
 
-    echo "=====> Basepath for buildpack is: $path"
+    echo "=====> Current path is: $1, Basepath for buildpack is: $path"
 
     framework=$($dir/bin/detect $path)
 
